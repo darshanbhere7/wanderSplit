@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "288778597965",
+    "firebase_url": "https://lab8-6ecc7-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "lab8-6ecc7",
+    "storage_bucket": "lab8-6ecc7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:288778597965:android:63d1d50debec9e5377ce04",
+        "android_client_info": {
+          "package_name": "com.example.lab8"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnY1QKOTWnGBzlQyU7_UPYhM49qRCN8L8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:288778597965:android:ef93abd6803a427e77ce04",
+        "android_client_info": {
+          "package_name": "com.example.lab_8"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnY1QKOTWnGBzlQyU7_UPYhM49qRCN8L8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
