@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'auth/login_screen.dart';
+import 'home_screen.dart';
+import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,82 +12,116 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
-    _navigateToLogin();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      ),
+    );
+
+    _controller.forward();
+
+    // Navigate to the appropriate screen after animation
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      final user = Provider.of<User?>(context, listen: false);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => user == null ? const LoginScreen() : const HomeScreen(),
+        ),
+      );
+    });
   }
 
-  Future<void> _navigateToLogin() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 600;
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
-          ),
-        ),
+      backgroundColor: AppTheme.primaryColor,
+      body: SafeArea(
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.account_balance_wallet_rounded,
-                size: 80,
-                color: Colors.white,
-              )
-              .animate(onPlay: (controller) => controller.repeat())
-              .shimmer(duration: 2.seconds, color: Colors.white.withOpacity(0.5))
-              .scale(
-                duration: 1.seconds,
-                begin: const Offset(0.8, 0.8),
-                end: const Offset(1.2, 1.2),
-              ),
-              const SizedBox(height: 24),
-              DefaultTextStyle(
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontFamily: 'Poppins',
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return FadeTransition(
+                opacity: _fadeAnimation,
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // App Logo
+                      Container(
+                        width: isSmallScreen ? 100 : 150,
+                        height: isSmallScreen ? 100 : 150,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.travel_explore,
+                          size: isSmallScreen ? 60 : 90,
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                      SizedBox(height: isSmallScreen ? 16 : 24),
+                      // App Name
+                      Text(
+                        'Wandersplit',
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          color: Colors.white,
+                          fontSize: isSmallScreen ? 28 : 36,
+                        ),
+                      ),
+                      SizedBox(height: isSmallScreen ? 8 : 12),
+                      // Tagline
+                      Text(
+                        'Split your travel expenses',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: isSmallScreen ? 14 : 16,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: AnimatedTextKit(
-                  animatedTexts: [
-                    WavyAnimatedText(
-                      'WanderSplit',
-                      speed: const Duration(milliseconds: 200),
-                    ),
-                  ],
-                  isRepeatingAnimation: false,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Split expenses, not friendships',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.8),
-                  fontFamily: 'Poppins',
-                ),
-              )
-              .animate()
-              .fadeIn(duration: 800.ms, delay: 500.ms)
-              .slideY(begin: 0.2, end: 0),
-            ],
+              );
+            },
           ),
         ),
       ),

@@ -7,6 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'trip/add_trip_screen.dart';
 import 'trip/trip_details_screen.dart';
 import 'auth/login_screen.dart'; // Added import for LoginScreen
+import 'package:provider/provider.dart';
+import '../providers/main_provider.dart';
+import '../models/trip_model.dart';
+import '../widgets/add_trip_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -170,112 +174,47 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             )
           else
-            StreamBuilder<QuerySnapshot>(
-              stream: _firestore
-                  .collection('trips')
-                  .where('participants', arrayContains: _currentUserId)
-                  .orderBy('startDate', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+            Consumer<MainProvider>(
+              builder: (context, provider, _) {
+                if (provider.isLoading) {
                   return const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-
-                if (snapshot.hasError) {
-                  // Check for index error specifically
-                  if (snapshot.error.toString().contains('index')) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (!_indexError) {
-                        setState(() {
-                          _indexError = true;
-                        });
-                      }
-                    });
-                  }
+                if (provider.error != null) {
                   return SliverFillRemaining(
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Error loading trips',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            snapshot.error.toString(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ],
+                      child: Text(
+                        provider.error!,
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
                   );
                 }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                if (provider.trips.isEmpty) {
                   return SliverFillRemaining(
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.card_travel_rounded,
-                            size: 64,
-                            color: Colors.grey[400],
-                          )
-                              .animate(onPlay: (controller) => controller.repeat())
-                              .shimmer(duration: 2.seconds),
-                          const SizedBox(height: 16),
-                          Text(
+                          const Text(
                             'No trips yet',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: TextStyle(fontSize: 18),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Create a trip to start splitting expenses',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                              color: Colors.grey[500],
-                            ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => _showAddTripDialog(),
+                            child: const Text('Create New Trip'),
                           ),
                         ],
                       ),
                     ),
                   );
                 }
-
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                      final trip = snapshot.data!.docs[index];
-                      final data = trip.data() as Map<String, dynamic>;
-
-                      // Add null checks for critical fields
-                      final startDate = data['startDate'] != null
-                          ? (data['startDate'] as Timestamp).toDate()
-                          : DateTime.now();
-                      final endDate = data['endDate'] != null
-                          ? (data['endDate'] as Timestamp).toDate()
-                          : DateTime.now();
-                      final participants = data['participants'] != null
-                          ? (data['participants'] as List).length
-                          : 0;
-                      final totalExpenses = data['totalExpenses'] != null
-                          ? (data['totalExpenses'] as num)
-                          : 0;
-
+                      final trip = provider.trips[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -288,11 +227,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: InkWell(
                             onTap: () {
-                              Navigator.push(
+                              Navigator.pushNamed(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (_) => TripDetailsScreen(tripId: trip.id),
-                                ),
+                                '/trip_details',
+                                arguments: trip,
                               );
                             },
                             borderRadius: BorderRadius.circular(16),
@@ -305,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          data['name'] as String? ?? 'Unnamed Trip',
+                                          trip.name,
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleLarge
@@ -326,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          '\$${totalExpenses.toStringAsFixed(2)}',
+                                          '\$${trip.budget.toStringAsFixed(2)}',
                                           style: TextStyle(
                                             color: Theme.of(context)
                                                 .colorScheme
@@ -347,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '${DateFormat('MMM d').format(startDate)} - ${DateFormat('MMM d, y').format(endDate)}',
+                                        '${DateFormat('MMM d').format(trip.startDate)} - ${trip.endDate != null ? DateFormat('MMM d, y').format(trip.endDate!) : 'No end date'}',
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium
@@ -367,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        '$participants participants',
+                                        '${trip.members.length} participants',
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium
@@ -387,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           .fadeIn(duration: 500.ms, delay: (index * 100).ms)
                           .slideX(begin: 0.2, end: 0);
                     },
-                    childCount: snapshot.data!.docs.length,
+                    childCount: provider.trips.length,
                   ),
                 );
               },
@@ -395,17 +333,26 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddTripScreen()),
-          );
-        },
+        onPressed: () => _showAddTripDialog(),
         icon: const Icon(Icons.add),
         label: const Text('New Trip'),
       )
           .animate()
           .scale(delay: 500.ms),
+    );
+  }
+
+  void _showAddTripDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AddTripDialog(
+        onTripAdded: (trip) {
+          // Optionally show a success message here
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Trip created successfully!')),
+          );
+        },
+      ),
     );
   }
 }
