@@ -2,20 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../models/trip_model.dart';
 import '../models/expense_model.dart';
 import '../models/settlement_model.dart';
 import '../providers/main_provider.dart';
 import '../widgets/add_expense_dialog.dart';
 import '../theme/app_theme.dart';
+import '../widgets/custom_app_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TripDetailsScreen extends StatefulWidget {
   final TripModel trip;
+  final bool isDarkMode;
+  final VoidCallback onThemeToggle;
 
   const TripDetailsScreen({
-    super.key,
+    Key? key,
     required this.trip,
-  });
+    required this.isDarkMode,
+    required this.onThemeToggle,
+  }) : super(key: key);
 
   @override
   State<TripDetailsScreen> createState() => _TripDetailsScreenState();
@@ -45,58 +52,90 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mainProvider = context.watch<MainProvider>();
+    final user = FirebaseAuth.instance.currentUser;
+    final isAdmin = widget.trip.createdBy == user?.uid || widget.trip.isAdmin(user?.uid ?? '');
+    final expenses = mainProvider.getExpensesForTrip(widget.trip.id);
+    final settlements = mainProvider.getSettlementsForTrip(widget.trip.id);
+    final totalExpenses = mainProvider.getTotalExpensesForTrip(widget.trip.id);
+    final categoryTotals = mainProvider.getCategoryTotalsForTrip(widget.trip.id);
+    final expenseTrends = mainProvider.getExpenseTrendsForTrip(widget.trip.id);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.trip.name),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withOpacity(0.7),
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+      appBar: CustomAppBar(
+        title: widget.trip.name,
+        isDarkMode: widget.isDarkMode,
+        onThemeToggle: widget.onThemeToggle,
+        actions: [
+          if (isAdmin) ...[
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: 'Rename Trip',
+              onPressed: () => _showRenameDialog(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              tooltip: 'Delete Trip',
+              onPressed: () => _showDeleteDialog(context),
+            ),
+          ],
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () => _logout(context),
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.background,
+            ],
           ),
-          tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Expenses'),
-            Tab(text: 'Settlements'),
-            Tab(text: 'Members'),
+        ),
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Overview'),
+                Tab(text: 'Expenses'),
+                Tab(text: 'Settlements'),
+                Tab(text: 'Members'),
+              ],
+              labelColor: theme.colorScheme.primary,
+              unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.7),
+              indicatorColor: theme.colorScheme.primary,
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildOverviewTab(totalExpenses, categoryTotals, expenseTrends),
+                  _buildExpensesTab(expenses),
+                  _buildSettlementsTab(settlements),
+                  _buildMembersTab(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
-      body: Consumer<MainProvider>(
-        builder: (context, provider, child) {
-          final expenses = provider.getExpensesForTrip(widget.trip.id);
-          final settlements = provider.getSettlementsForTrip(widget.trip.id);
-          final totalExpenses = provider.getTotalExpensesForTrip(widget.trip.id);
-          final categoryTotals = provider.getCategoryTotalsForTrip(widget.trip.id);
-          final expenseTrends = provider.getExpenseTrendsForTrip(widget.trip.id);
-
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _buildOverviewTab(
-                totalExpenses,
-                categoryTotals,
-                expenseTrends,
-              ),
-              _buildExpensesTab(expenses),
-              _buildSettlementsTab(settlements),
-              _buildMembersTab(),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddExpenseDialog(context),
-        child: const Icon(Icons.add),
-      ),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Expense'),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+      )
+      .animate()
+      .fadeIn(duration: 600.ms, delay: 900.ms)
+      .slideY(begin: 0.2, end: 0),
     );
   }
 
@@ -357,6 +396,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shadowColor: Colors.black12,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -369,13 +411,24 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    width: 100,
+                    height: 100,
                     child: PieChart(
                       PieChartData(
                         sections: sortedCategories.map((entry) {
@@ -384,56 +437,60 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
                             value: entry.value,
                             title: '${(percentage * 100).toStringAsFixed(1)}%',
                             color: _getCategoryColor(entry.key),
-                            radius: 80,
+                            radius: 40,
                             titleStyle: const TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
+                            borderSide: BorderSide(color: Colors.white.withOpacity(0.8), width: 2),
                           );
                         }).toList(),
                         sectionsSpace: 2,
-                        centerSpaceRadius: 40,
+                        centerSpaceRadius: 28,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: sortedCategories.map((entry) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              Icon(
-                                _getCategoryIcon(entry.key),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: sortedCategories.map((entry) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
                                 color: _getCategoryColor(entry.key),
-                                size: 16,
+                                shape: BoxShape.circle,
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  entry.key.toString().split('.').last,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                entry.key.toString().split('.').last,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                               ),
-                              Text(
-                                _currencyFormat.format(entry.value),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            Text(
+                              _currencyFormat.format(entry.value),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -528,18 +585,6 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
           ),
         );
       },
-    );
-  }
-
-  void _showAddExpenseDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AddExpenseDialog(
-        trip: widget.trip,
-        onExpenseAdded: (expense) {
-          context.read<MainProvider>().addExpense(expense);
-        },
-      ),
     );
   }
 
@@ -678,6 +723,113 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
         return Icons.check_circle;
       case SettlementStatus.cancelled:
         return Icons.cancel;
+    }
+  }
+
+  void _showAddExpenseDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AddExpenseDialog(
+        trip: widget.trip,
+        onExpenseAdded: (expense) {
+          context.read<MainProvider>().addExpense(expense);
+        },
+      ),
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Trip'),
+        content: const Text('Are you sure you want to delete this trip? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await context.read<MainProvider>().deleteTrip(widget.trip.id);
+                if (mounted) {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting trip: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Delete'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRenameDialog(BuildContext context) {
+    final _nameController = TextEditingController(text: widget.trip.name);
+    final _descController = TextEditingController(text: widget.trip.description);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rename Trip'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Trip Name'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _descController,
+              decoration: const InputDecoration(labelText: 'Description'),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await context.read<MainProvider>().renameTrip(
+                  widget.trip.id,
+                  _nameController.text.trim(),
+                  _descController.text.trim(),
+                );
+                if (mounted) Navigator.of(ctx).pop();
+              } catch (e) {
+                if (mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error renaming trip: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }
   }
 } 

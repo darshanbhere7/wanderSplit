@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import '../../providers/auth_provider.dart' as app_auth;
 import 'register_screen.dart';
+import 'forgot_password_screen.dart';
 import '../home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final bool isDarkMode;
+  final VoidCallback onThemeToggle;
+
+  const LoginScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeToggle,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -24,22 +34,46 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final success = await context.read<app_auth.AuthProvider>().signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      
+
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? 'An error occurred'),
-          backgroundColor: Colors.red,
-        ),
-      );
+
+      if (success) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.read<app_auth.AuthProvider>().errorMessage ?? 'An error occurred'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final success = await context.read<app_auth.AuthProvider>().signInWithGoogle();
+
+      if (!mounted) return;
+
+      if (success) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.read<app_auth.AuthProvider>().errorMessage ?? 'An error occurred'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -48,6 +82,19 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login'),
+        actions: [
+          IconButton(
+            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            tooltip: 'Toggle Dark Mode',
+            onPressed: widget.onThemeToggle,
+          ),
+        ],
+        elevation: 0,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -56,16 +103,12 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
                 Icon(
                   Icons.account_balance_wallet_rounded,
                   size: 64,
                   color: Theme.of(context).colorScheme.primary,
-                )
-                .animate()
-                .scale(duration: 500.ms)
-                .then()
-                .shimmer(duration: 1.seconds),
+                ),
                 const SizedBox(height: 24),
                 Text(
                   'Welcome Back!',
@@ -74,10 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   textAlign: TextAlign.center,
-                )
-                .animate()
-                .fadeIn(duration: 500.ms)
-                .slideY(begin: 0.2, end: 0),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Login to manage your travel expenses',
@@ -85,11 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.grey[600],
                   ),
                   textAlign: TextAlign.center,
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 200.ms)
-                .slideY(begin: 0.2, end: 0),
-                const SizedBox(height: 48),
+                ),
+                const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -104,15 +141,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!value.contains('@')) {
+                    if (!value.contains('@') || !value.contains('.')) {
                       return 'Please enter a valid email';
                     }
                     return null;
                   },
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 400.ms)
-                .slideX(begin: -0.2, end: 0),
+                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
@@ -145,10 +179,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                     return null;
                   },
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 600.ms)
-                .slideX(begin: 0.2, end: 0),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ForgotPasswordScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _login,
@@ -162,16 +212,46 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         )
                       : const Text('Login'),
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 800.ms)
-                .slideY(begin: 0.2, end: 0),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'OR',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                  icon: Image.network(
+                    'https://www.google.com/favicon.ico',
+                    height: 24,
+                  ),
+                  label: const Text('Continue with Google'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const RegisterScreen(),
+                        builder: (_) => RegisterScreen(
+                          isDarkMode: widget.isDarkMode,
+                          onThemeToggle: widget.onThemeToggle,
+                        ),
                       ),
                     );
                   },
@@ -181,9 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 1000.ms),
+                ),
               ],
             ),
           ),

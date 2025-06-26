@@ -23,8 +23,23 @@ class AuthProvider with ChangeNotifier {
     _authService.authStateChanges.listen((User? user) async {
       if (user == null) {
         _userModel = null;
+        notifyListeners();
+      } else {
+        // Listen to user document in Firestore for real-time updates
+        _authService.firestore
+            .collection('users')
+            .doc(user.uid)
+            .snapshots()
+            .listen((docSnapshot) {
+          if (docSnapshot.exists) {
+            _userModel = UserModel.fromMap(
+              docSnapshot.data() as Map<String, dynamic>,
+              docSnapshot.id,
+            );
+          }
+          notifyListeners();
+        });
       }
-      notifyListeners();
     });
   }
 
@@ -91,6 +106,58 @@ class AuthProvider with ChangeNotifier {
       _isLoading = false;
       _errorMessage = e.toString();
       notifyListeners();
+    }
+  }
+
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _userModel = await _authService.signInWithGoogle();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateProfile({
+    String? displayName,
+    String? photoURL,
+  }) async {
+    if (_userModel == null) return false;
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authService.updateUserProfile(
+        userId: _userModel!.id!,
+        displayName: displayName,
+        photoURL: photoURL,
+      );
+
+      // Update local user model
+      _userModel = _userModel!.copyWith(
+        displayName: displayName,
+        photoURL: photoURL,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
     }
   }
 

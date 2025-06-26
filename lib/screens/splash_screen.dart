@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:provider/provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'auth/login_screen.dart';
 import 'home_screen.dart';
 import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final bool isDarkMode;
+  final VoidCallback onThemeToggle;
+
+  const SplashScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeToggle,
+  });
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -32,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
@@ -44,12 +52,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Navigate to the appropriate screen after animation
     Future.delayed(const Duration(seconds: 3), () {
       if (!mounted) return;
-      final user = Provider.of<User?>(context, listen: false);
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => user == null ? const LoginScreen() : const HomeScreen(),
-        ),
-      );
+      final user = context.read<User?>();
+      if (user == null) {
+        Navigator.of(context).pushReplacementNamed('/introduction');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     });
   }
 
@@ -65,63 +73,105 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final isSmallScreen = size.width < 600;
 
     return Scaffold(
-      backgroundColor: AppTheme.primaryColor,
-      body: SafeArea(
-        child: Center(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // App Logo
-                      Container(
-                        width: isSmallScreen ? 100 : 150,
-                        height: isSmallScreen ? 100 : 150,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              spreadRadius: 2,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.primaryColor,
+              AppTheme.secondaryColor,
+              AppTheme.accentColor,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Modern App Icon
+                        Container(
+                          width: isSmallScreen ? 110 : 160,
+                          height: isSmallScreen ? 110 : 160,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.95),
+                                Colors.white.withOpacity(0.7),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 24,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.travel_explore_rounded,
+                              size: isSmallScreen ? 64 : 100,
+                              color: AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: isSmallScreen ? 24 : 36),
+                        // App Name with shimmer/glow
+                        Animate(
+                          effects: [
+                            ShimmerEffect(duration: 1200.ms, color: Colors.white.withOpacity(0.7)),
                           ],
+                          child: Text(
+                            'WanderSplit',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w700,
+                              fontSize: isSmallScreen ? 32 : 44,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.18),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          Icons.travel_explore,
-                          size: isSmallScreen ? 60 : 90,
-                          color: AppTheme.primaryColor,
+                        SizedBox(height: isSmallScreen ? 10 : 18),
+                        // Tagline
+                        Text(
+                          'Split your expense, not friendship!',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: isSmallScreen ? 15 : 20,
+                            color: Colors.white.withOpacity(0.93),
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                      SizedBox(height: isSmallScreen ? 16 : 24),
-                      // App Name
-                      Text(
-                        'Wandersplit',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          color: Colors.white,
-                          fontSize: isSmallScreen ? 28 : 36,
-                        ),
-                      ),
-                      SizedBox(height: isSmallScreen ? 8 : 12),
-                      // Tagline
-                      Text(
-                        'Split your travel expenses',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: isSmallScreen ? 14 : 16,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

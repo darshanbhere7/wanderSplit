@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart' as app_auth;
 import '../home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final bool isDarkMode;
+  final VoidCallback onThemeToggle;
+
+  const RegisterScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeToggle,
+  });
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -28,26 +37,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       // Create user account
-      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final success = await context.read<app_auth.AuthProvider>().signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
+        displayName: _nameController.text.trim(),
       );
-
-      // Create user profile in Firestore
-      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-        'name': _nameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.message ?? 'An error occurred'),
+          content: Text(context.read<app_auth.AuthProvider>().errorMessage ?? 'An error occurred'),
           backgroundColor: Colors.red,
         ),
       );
@@ -61,6 +62,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
+        actions: [
+          IconButton(
+            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            tooltip: 'Toggle Dark Mode',
+            onPressed: widget.onThemeToggle,
+          ),
+        ],
+        elevation: 0,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -231,6 +242,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         )
                       : const Text('Create Account'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 )
                 .animate()
                 .fadeIn(duration: 500.ms, delay: 1200.ms)

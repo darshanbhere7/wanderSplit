@@ -299,4 +299,40 @@ class MainProvider with ChangeNotifier {
         .toList()
       ..sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
   }
+
+  Future<void> deleteTrip(String tripId) async {
+    try {
+      await FirebaseFirestore.instance.collection('trips').doc(tripId).delete();
+      // Optionally, delete related expenses and settlements here
+      _trips.removeWhere((trip) => trip.id == tripId);
+      notifyListeners();
+    } catch (e) {
+      _error = 'Error deleting trip: $e';
+      debugPrint(_error);
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> renameTrip(String tripId, String newName, String? newDescription) async {
+    try {
+      await FirebaseFirestore.instance.collection('trips').doc(tripId).update({
+        'name': newName,
+        if (newDescription != null) 'description': newDescription,
+        'updatedAt': Timestamp.now(),
+      });
+      // Update local list
+      final index = _trips.indexWhere((trip) => trip.id == tripId);
+      if (index != -1) {
+        final oldTrip = _trips[index];
+        _trips[index] = oldTrip.copyWith(name: newName, description: newDescription);
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = 'Error renaming trip: $e';
+      debugPrint(_error);
+      notifyListeners();
+      rethrow;
+    }
+  }
 } 

@@ -11,9 +11,18 @@ import 'package:provider/provider.dart';
 import '../providers/main_provider.dart';
 import '../models/trip_model.dart';
 import '../widgets/add_trip_dialog.dart';
+import '../widgets/custom_app_bar.dart';
+import 'profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool isDarkMode;
+  final VoidCallback onThemeToggle;
+
+  const HomeScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeToggle,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -61,8 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
       // Navigate to LoginScreen and clear navigation stack
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (Route<dynamic> route) => false,
+        MaterialPageRoute(builder: (context) => LoginScreen(
+          isDarkMode: widget.isDarkMode,
+          onThemeToggle: widget.onThemeToggle,
+        )),
+        (Route<dynamic> route) => false,
       );
     } catch (e) {
       setState(() {
@@ -92,265 +104,221 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mainProvider = context.watch<MainProvider>();
+    final trips = mainProvider.trips;
+
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar.large(
-            title: const Text('WanderSplit'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: _signOut,
-              ),
+      appBar: CustomAppBar(
+        title: 'My Trips',
+        isDarkMode: widget.isDarkMode,
+        onThemeToggle: widget.onThemeToggle,
+        onLogout: _signOut,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle_rounded),
+            tooltip: 'Profile',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.background,
             ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
+          ),
+        ),
+        child: trips.isEmpty
+            ? Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.card_travel,
+                        size: 80,
+                        color: theme.colorScheme.primary.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No trips yet',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: theme.colorScheme.primary.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => _showAddTripDialog(context),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Create Trip'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Your Trips',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: trips.length,
+                itemBuilder: (context, index) {
+                  final trip = trips[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        _error!,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  if (_indexError)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Database index required',
-                            style: TextStyle(color: Colors.red),
+                    shadowColor: theme.colorScheme.primary.withOpacity(0.15),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/trip_details',
+                          arguments: trip,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          gradient: LinearGradient(
+                            colors: [
+                              theme.colorScheme.primary.withOpacity(0.08),
+                              theme.colorScheme.secondary.withOpacity(0.06),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: _createIndex,
-                            child: const Text('Create Index Now'),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          if (_isLoading)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (_currentUserId == null)
-            SliverFillRemaining(
-              child: Center(
-                child: Text(
-                  'Please sign in to view your trips',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-            )
-          else
-            Consumer<MainProvider>(
-              builder: (context, provider, _) {
-                if (provider.isLoading) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (provider.error != null) {
-                  return SliverFillRemaining(
-                    child: Center(
-                      child: Text(
-                        provider.error!,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  );
-                }
-                if (provider.trips.isEmpty) {
-                  return SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'No trips yet',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () => _showAddTripDialog(),
-                            child: const Text('Create New Trip'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                      final trip = provider.trips[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
                         ),
-                        child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/trip_details',
-                                arguments: trip,
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          trip.name,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleLarge
-                                              ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primaryContainer,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          '\$${trip.budget.toStringAsFixed(2)}',
-                                          style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimaryContainer,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
+                                  radius: 28,
+                                  child: Icon(
+                                    Icons.card_travel,
+                                    color: theme.colorScheme.primary,
+                                    size: 32,
                                   ),
-                                  const SizedBox(height: 8),
-                                  Row(
+                                ),
+                                const SizedBox(width: 18),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(
-                                        Icons.calendar_today,
-                                        size: 16,
-                                        color: Colors.grey,
-                                      ),
-                                      const SizedBox(width: 4),
                                       Text(
-                                        '${DateFormat('MMM d').format(trip.startDate)} - ${trip.endDate != null ? DateFormat('MMM d, y').format(trip.endDate!) : 'No end date'}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                          color: Colors.grey[600],
+                                        trip.name,
+                                        style: theme.textTheme.titleLarge?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.group_outlined,
-                                        size: 16,
-                                        color: Colors.grey,
-                                      ),
-                                      const SizedBox(width: 4),
+                                      const SizedBox(height: 4),
                                       Text(
-                                        '${trip.members.length} participants',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                          color: Colors.grey[600],
+                                        trip.description,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurface.withOpacity(0.7),
                                         ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: 18),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 8,
+                              children: [
+                                if (trip.location != null && trip.location!.isNotEmpty)
+                                  _buildInfoChip(
+                                    icon: Icons.location_on,
+                                    label: trip.location!,
+                                    theme: theme,
+                                  ),
+                                _buildInfoChip(
+                                  icon: Icons.calendar_today,
+                                  label: '${trip.startDate.year}-${trip.startDate.month.toString().padLeft(2, '0')}-${trip.startDate.day.toString().padLeft(2, '0')}',
+                                  theme: theme,
+                                ),
+                                if (trip.endDate != null)
+                                  _buildInfoChip(
+                                    icon: Icons.calendar_today,
+                                    label: '${trip.endDate!.year}-${trip.endDate!.month.toString().padLeft(2, '0')}-${trip.endDate!.day.toString().padLeft(2, '0')}',
+                                    theme: theme,
+                                  ),
+                                _buildInfoChip(
+                                  icon: Icons.people,
+                                  label: '${trip.members.length} members',
+                                  theme: theme,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      )
-                          .animate()
-                          .fadeIn(duration: 500.ms, delay: (index * 100).ms)
-                          .slideX(begin: 0.2, end: 0);
-                    },
-                    childCount: provider.trips.length,
-                  ),
-                );
-              },
-            ),
-        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddTripDialog(),
+        onPressed: () => _showAddTripDialog(context),
         icon: const Icon(Icons.add),
-        label: const Text('New Trip'),
-      )
-          .animate()
-          .scale(delay: 500.ms),
+        label: const Text('Create Trip'),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+      ),
     );
   }
 
-  void _showAddTripDialog() {
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required ThemeData theme,
+  }) {
+    return Chip(
+      avatar: Icon(icon, size: 16),
+      label: Text(label),
+      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+      labelStyle: TextStyle(color: theme.colorScheme.primary),
+    )
+    .animate()
+    .scale(duration: 300.ms);
+  }
+
+  void _showAddTripDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AddTripDialog(
         onTripAdded: (trip) {
-          // Optionally show a success message here
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Trip created successfully!')),
-          );
+          context.read<MainProvider>().addTrip(trip);
         },
       ),
     );
