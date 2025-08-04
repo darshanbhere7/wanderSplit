@@ -203,19 +203,7 @@ Follow these instructions to get a local copy of the project up and running for 
 - **Offline Support**: Basic offline functionality
 
 ## 📸 Screenshots & Demo
-
-<img width="1344" height="2992" alt="Screenshot_20250804_115109" src="https://github.com/user-attachments/assets/42488f7d-7831-428f-8514-c4af8127fedf" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115149" src="https://github.com/user-attachments/assets/caca3ac5-0319-4fea-a1cc-dfb6a763cd74" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115209" src="https://github.com/user-attachments/assets/5eefbc44-088e-4b5f-a756-d7e1692f25a3" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115234" src="https://github.com/user-attachments/assets/7fe4be62-815b-4ccb-a449-384fd290818b" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115243" src="https://github.com/user-attachments/assets/4ebda638-13ef-45d3-b577-e0cc4ec9a2a0" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115328" src="https://github.com/user-attachments/assets/4029762a-dc06-4081-a0a9-e51a974e4377" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115634" src="https://github.com/user-attachments/assets/cd4277e8-a690-4174-ae31-5e66cfadbcce" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115413" src="https://github.com/user-attachments/assets/96d0a5cf-1526-49fc-aaec-d364776f4645" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115420" src="https://github.com/user-attachments/assets/4700c094-ce9c-42fd-b586-09258e687c92" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115428" src="https://github.com/user-attachments/assets/4fc2bd64-591b-499b-9b00-7f64619507a5" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115507" src="https://github.com/user-attachments/assets/5f1ebf14-b667-4436-944e-12b72ccf4c2c" />
-<img width="1344" height="2992" alt="Screenshot_20250804_115521" src="https://github.com/user-attachments/assets/4085ba38-6ff6-4838-af0b-06e53021e2e7" />
+<p align="center"> <img src="https://github.com/user-attachments/assets/42488f7d-7831-428f-8514-c4af8127fedf" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/caca3ac5-0319-4fea-a1cc-dfb6a763cd74" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/5eefbc44-088e-4b5f-a756-d7e1692f25a3" width="30%" style="margin:5px;" /> </p> <p align="center"> <img src="https://github.com/user-attachments/assets/7fe4be62-815b-4ccb-a449-384fd290818b" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/4ebda638-13ef-45d3-b577-e0cc4ec9a2a0" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/4029762a-dc06-4081-a0a9-e51a974e4377" width="30%" style="margin:5px;" /> </p> <p align="center"> <img src="https://github.com/user-attachments/assets/cd4277e8-a690-4174-ae31-5e66cfadbcce" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/96d0a5cf-1526-49fc-aaec-d364776f4645" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/4700c094-ce9c-42fd-b586-09258e687c92" width="30%" style="margin:5px;" /> </p> <p align="center"> <img src="https://github.com/user-attachments/assets/4fc2bd64-591b-499b-9b00-7f64619507a5" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/5f1ebf14-b667-4436-944e-12b72ccf4c2c" width="30%" style="margin:5px;" /> <img src="https://github.com/user-attachments/assets/4085ba38-6ff6-4838-af0b-06e53021e2e7" width="30%" style="margin:5px;" /> </p>
 
 
 ### Key Screenshots to Add:
