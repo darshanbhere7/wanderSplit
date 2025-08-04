@@ -84,6 +84,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               AppTheme.primaryColor,
               AppTheme.secondaryColor,
               AppTheme.accentColor,
+              Color(0xFFB2EBF2), // extra light blue for vibrancy
             ],
           ),
         ),
@@ -137,10 +138,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ],
                           child: Text(
                             'WanderSplit',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
+                            style: Theme.of(context).textTheme.displayLarge?.copyWith(
                               fontWeight: FontWeight.w700,
-                              fontSize: isSmallScreen ? 32 : 44,
                               color: Colors.white,
                               letterSpacing: 1.2,
                               shadows: [
@@ -157,10 +156,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         // Tagline
                         Text(
                           'Split your expense, not friendship!',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w500,
-                            fontSize: isSmallScreen ? 15 : 20,
                             color: Colors.white.withOpacity(0.93),
                             letterSpacing: 0.5,
                           ),

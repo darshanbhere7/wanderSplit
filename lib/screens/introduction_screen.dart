@@ -26,11 +26,13 @@ class IntroductionScreen extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.surface,
+              theme.colorScheme.primary.withOpacity(0.12),
+              theme.colorScheme.secondary.withOpacity(0.10),
               theme.colorScheme.background,
+              Colors.white,
             ],
           ),
         ),
@@ -205,29 +207,29 @@ class IntroductionScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
-      elevation: 4,
+      elevation: 8,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: theme.colorScheme.primary.withOpacity(0.13),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
                 color: theme.colorScheme.primary,
-                size: 32,
+                size: 36,
               ),
             )
             .animate()
             .scale(duration: 300.ms, delay: (delay + 100).ms),
-            const SizedBox(width: 16),
+            const SizedBox(width: 18),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,7 +243,7 @@ class IntroductionScreen extends StatelessWidget {
                   .animate()
                   .fadeIn(duration: 600.ms, delay: (delay + 200).ms)
                   .slideX(begin: 0.2, end: 0),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     description,
                     style: theme.textTheme.bodyMedium?.copyWith(

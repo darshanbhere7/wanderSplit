@@ -25,6 +25,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Poppins',
       colorScheme: ColorScheme.light(
         primary: primaryColor,
         secondary: secondaryColor,
@@ -133,6 +134,7 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'Poppins',
       colorScheme: ColorScheme.dark(
         primary: darkPrimaryColor,
         secondary: darkSecondaryColor,

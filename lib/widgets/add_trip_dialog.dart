@@ -163,298 +163,320 @@ class _AddTripDialogState extends State<AddTripDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isSmall = constraints.maxWidth < 400;
-          return ConstrainedBox(
-        constraints: BoxConstraints(
-              maxWidth: isSmall ? 360 : 500,
-              maxHeight: MediaQuery.of(context).size.height * 0.85,
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Create New Trip',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                        fontSize: isSmall ? 20 : 24,
-                  ),
-                  textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Trip Name',
-                    prefixIcon: const Icon(Icons.card_travel),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a trip name';
-                    }
-                    return null;
-                  },
-                    ),
-                    const SizedBox(height: 12),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    prefixIcon: const Icon(Icons.description),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  ),
-                      maxLines: 2,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _budgetController,
-                            keyboardType: TextInputType.numberWithOptions(decimal: true),
-                            decoration: InputDecoration(
-                              labelText: 'Budget',
-                              prefixIcon: const Icon(Icons.attach_money),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Please enter a budget';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Enter a valid number';
-                              }
-                              return null;
-                            },
-                          ),
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width < 500 ? 360 : 420,
+            maxHeight: MediaQuery.of(context).size.height * 0.80,
+          ),
+          child: Card(
+            elevation: 16,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    theme.colorScheme.primary.withOpacity(0.07),
+                    theme.colorScheme.secondary.withOpacity(0.05),
+                    Colors.white,
+                  ],
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Create New Trip',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _currency,
-                            decoration: InputDecoration(
-                              labelText: 'Currency',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                            ),
-                            items: ['INR', 'USD', 'EUR', 'GBP'].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                            onChanged: (val) => setState(() => _currency = val ?? 'INR'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _locationController,
-                      decoration: InputDecoration(
-                        labelText: 'Location',
-                        prefixIcon: const Icon(Icons.location_on),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => _selectDate(context, true),
-                            child: AbsorbPointer(
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                  labelText: 'Start Date',
-                                  prefixIcon: const Icon(Icons.date_range),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                ),
-                                controller: TextEditingController(text: _startDate.toString().split(' ')[0]),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => _selectDate(context, false),
-                            child: AbsorbPointer(
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                  labelText: 'End Date',
-                                  prefixIcon: const Icon(Icons.date_range),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                ),
-                                controller: TextEditingController(text: _endDate != null ? _endDate.toString().split(' ')[0] : ''),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                DropdownButtonFormField<TripCategory>(
-                  value: _category,
-                  decoration: InputDecoration(
-                    labelText: 'Category',
-                    prefixIcon: const Icon(Icons.category),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  ),
-                  items: TripCategory.values.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category.toString().split('.').last),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _category = value);
-                    }
-                  },
-                    ),
-                    const SizedBox(height: 16),
-                    Text('Trip Members', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.04),
-                            borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.08)),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _memberEmailController,
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        style: const TextStyle(fontSize: 14),
+                        controller: _nameController,
                         decoration: InputDecoration(
-                                    labelText: 'Add member by email',
-                                    prefixIcon: const Icon(Icons.person_add),
+                          labelText: 'Trip Name',
+                          prefixIcon: const Icon(Icons.card_travel),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                         ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a trip name';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                      onPressed: _isLoading ? null : _addMember,
-                                icon: const Icon(Icons.add),
-                                label: const Text('Add'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
-                                  foregroundColor: theme.colorScheme.onPrimary,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                            ],
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        style: const TextStyle(fontSize: 14),
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          prefixIcon: const Icon(Icons.description),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: _members.map((member) {
-                              return Chip(
-                                avatar: CircleAvatar(
-                                  backgroundColor: member.role == MemberRole.admin
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.secondary,
-                                  child: Icon(
-                                    member.role == MemberRole.admin ? Icons.star : Icons.person,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        ),
+                        maxLines: 2,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a description';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              style: const TextStyle(fontSize: 14),
+                              controller: _budgetController,
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                labelText: 'Budget',
+                                prefixIcon: const Icon(Icons.attach_money),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                label: Text(
-                                  member.name,
-                        style: TextStyle(
-                                    fontWeight: member.role == MemberRole.admin ? FontWeight.bold : FontWeight.normal,
-                                    color: member.role == MemberRole.admin
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.onSurface,
-                                  ),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter a budget';
+                                }
+                                if (double.tryParse(value) == null) {
+                                  return 'Enter a valid number';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              style: const TextStyle(fontSize: 14),
+                              value: _currency,
+                              decoration: InputDecoration(
+                                labelText: 'Currency',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                backgroundColor: member.role == MemberRole.admin
-                                    ? theme.colorScheme.primary.withOpacity(0.12)
-                                    : theme.colorScheme.secondary.withOpacity(0.10),
-                                deleteIcon: member.role == MemberRole.admin
-                                    ? null
-                                    : const Icon(Icons.close, size: 18),
-                                onDeleted: member.role == MemberRole.admin
-                                    ? null
-                                    : () => _removeMember(member.userId),
-                              );
-                            }).toList(),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              ),
+                              items: ['INR', 'USD', 'EUR', 'GBP'].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                              onChanged: (val) => setState(() => _currency = val ?? 'INR'),
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submitForm,
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Text('Create Trip'),
-                      style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        style: const TextStyle(fontSize: 14),
+                        controller: _locationController,
+                        decoration: InputDecoration(
+                          labelText: 'Location',
+                          prefixIcon: const Icon(Icons.location_on),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _selectDate(context, true),
+                              child: AbsorbPointer(
+                                child: TextFormField(
+                                  decoration: InputDecoration(
+                                    labelText: 'Start Date',
+                                    prefixIcon: const Icon(Icons.date_range),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                  ),
+                                  controller: TextEditingController(text: _startDate.toString().split(' ')[0]),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _selectDate(context, false),
+                              child: AbsorbPointer(
+                                child: TextFormField(
+                                  decoration: InputDecoration(
+                                    labelText: 'End Date',
+                                    prefixIcon: const Icon(Icons.date_range),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                  ),
+                                  controller: TextEditingController(text: _endDate != null ? _endDate.toString().split(' ')[0] : ''),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<TripCategory>(
+                        style: const TextStyle(fontSize: 14),
+                        value: _category,
+                        decoration: InputDecoration(
+                          labelText: 'Category',
+                          prefixIcon: const Icon(Icons.category),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        ),
+                        items: TripCategory.values.map((category) {
+                          return DropdownMenuItem(
+                            value: category,
+                            child: Text(category.toString().split('.').last),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _category = value);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      const SizedBox(height: 8),
+                      Text('Trip Members', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
+                      const SizedBox(height: 6),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withOpacity(0.04),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: theme.colorScheme.primary.withOpacity(0.08)),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    style: const TextStyle(fontSize: 14),
+                                    controller: _memberEmailController,
+                                    decoration: InputDecoration(
+                                      labelText: 'Add member by email',
+                                      prefixIcon: const Icon(Icons.person_add),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    textStyle: const TextStyle(fontSize: 12),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                  ),
+                                  onPressed: _isLoading ? null : _addMember,
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Add'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: _members.map((member) {
+                                return Chip(
+                                  avatar: CircleAvatar(
+                                    backgroundColor: member.role == MemberRole.admin
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.secondary,
+                                    child: Icon(
+                                      member.role == MemberRole.admin ? Icons.star : Icons.person,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                  ),
+                                  label: Text(
+                                    member.name,
+                                    style: TextStyle(
+                                      fontWeight: member.role == MemberRole.admin ? FontWeight.bold : FontWeight.normal,
+                                      color: member.role == MemberRole.admin
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.onSurface,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  backgroundColor: member.role == MemberRole.admin
+                                      ? theme.colorScheme.primary.withOpacity(0.12)
+                                      : theme.colorScheme.secondary.withOpacity(0.10),
+                                  deleteIcon: member.role == MemberRole.admin
+                                      ? null
+                                      : const Icon(Icons.close, size: 14),
+                                  onDeleted: member.role == MemberRole.admin
+                                      ? null
+                                      : () => _removeMember(member.userId),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _submitForm,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : Text('Create Trip', style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 14)),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            textStyle: const TextStyle(fontSize: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
-          );
-        },
       ),
     );
   }

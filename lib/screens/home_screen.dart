@@ -130,11 +130,13 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.surface,
+              theme.colorScheme.primary.withOpacity(0.10),
+              theme.colorScheme.secondary.withOpacity(0.08),
               theme.colorScheme.background,
+              Colors.white,
             ],
           ),
         ),
@@ -153,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         'No trips yet',
                         style: theme.textTheme.headlineSmall?.copyWith(
-                          color: theme.colorScheme.primary.withOpacity(0.5),
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -182,11 +184,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   final trip = trips[index];
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
-                    elevation: 8,
+                    elevation: 12,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                    shadowColor: theme.colorScheme.primary.withOpacity(0.15),
+                    shadowColor: theme.colorScheme.primary.withOpacity(0.18),
                     child: InkWell(
                       onTap: () {
                         Navigator.pushNamed(
@@ -195,20 +197,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           arguments: trip,
                         );
                       },
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                           gradient: LinearGradient(
                             colors: [
-                              theme.colorScheme.primary.withOpacity(0.08),
-                              theme.colorScheme.secondary.withOpacity(0.06),
+                              theme.colorScheme.primary.withOpacity(0.13),
+                              theme.colorScheme.secondary.withOpacity(0.10),
+                              Colors.white.withOpacity(0.95),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                         ),
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -273,11 +276,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     label: '${trip.endDate!.year}-${trip.endDate!.month.toString().padLeft(2, '0')}-${trip.endDate!.day.toString().padLeft(2, '0')}',
                                     theme: theme,
                                   ),
-                                _buildInfoChip(
-                                  icon: Icons.people,
-                                  label: '${trip.members.length} members',
-                                  theme: theme,
-                                ),
                               ],
                             ),
                           ],
@@ -307,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
       avatar: Icon(icon, size: 16),
       label: Text(label),
       backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-      labelStyle: TextStyle(color: theme.colorScheme.primary),
+      labelStyle: TextStyle(color: theme.colorScheme.onSurface),
     )
     .animate()
     .scale(duration: 300.ms);

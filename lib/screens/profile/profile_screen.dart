@@ -114,119 +114,133 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         title: const Text('Profile'),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 24),
-                Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundImage: _imageFile != null
-                          ? FileImage(_imageFile!)
-                          : (currentPhotoURL != null
-                              ? NetworkImage(currentPhotoURL) as ImageProvider
-                              : null),
-                      child: _imageFile == null && currentPhotoURL == null
-                          ? const Icon(Icons.person, size: 60)
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.camera_alt, color: Colors.white),
-                          onPressed: _pickImage,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.10),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.08),
+              Theme.of(context).colorScheme.background,
+              Colors.white,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 24),
+                  Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundImage: _imageFile != null
+                            ? FileImage(_imageFile!)
+                            : (currentPhotoURL != null
+                                ? NetworkImage(currentPhotoURL) as ImageProvider
+                                : null),
+                        child: _imageFile == null && currentPhotoURL == null
+                            ? const Icon(Icons.person, size: 60)
+                            : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.camera_alt, color: Colors.white),
+                            onPressed: _pickImage,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Display Name',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    ],
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _updateProfile,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Update Profile'),
-                ),
-                const SizedBox(height: 32),
-                Card(
-                  elevation: 6,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  margin: const EdgeInsets.only(bottom: 32),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 32,
-                              backgroundImage: currentPhotoURL != null ? NetworkImage(currentPhotoURL) : null,
-                              child: currentPhotoURL == null ? const Icon(Icons.person, size: 32) : null,
+                  const SizedBox(height: 32),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Display Name',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _updateProfile,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(userModel?.displayName ?? '', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 4),
-                                  Text(email, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[700])),
-                                ],
+                          )
+                        : const Text('Update Profile'),
+                  ),
+                  const SizedBox(height: 32),
+                  Card(
+                    elevation: 10,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    margin: const EdgeInsets.only(bottom: 32),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 32,
+                                backgroundImage: currentPhotoURL != null ? NetworkImage(currentPhotoURL) : null,
+                                child: currentPhotoURL == null ? const Icon(Icons.person, size: 32) : null,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildStatCard('Trips Joined', tripsJoined.toString(), Icons.group, Colors.blue),
-                            _buildStatCard('Trips Created', tripsCreated.toString(), Icons.star, Colors.orange),
-                            _buildStatCard('Total Paid', '₹${totalExpensesPaid.toStringAsFixed(2)}', Icons.account_balance_wallet, Colors.green),
-                          ],
-                        ),
-                      ],
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(userModel?.displayName ?? '', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 4),
+                                    Text(email, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[700])),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildStatCard('Trips Joined', tripsJoined.toString(), Icons.group, Colors.blue),
+                              _buildStatCard('Trips Created', tripsCreated.toString(), Icons.star, Colors.orange),
+                              _buildStatCard('Total Paid', '₹${totalExpensesPaid.toStringAsFixed(2)}', Icons.account_balance_wallet, Colors.green),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -238,11 +252,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       children: [
         CircleAvatar(
-          backgroundColor: color.withOpacity(0.15),
-          child: Icon(icon, color: color),
+          backgroundColor: color.withOpacity(0.18),
+          child: Icon(icon, color: Theme.of(context).colorScheme.onSurface, size: 22),
         ),
         const SizedBox(height: 6),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.onSurface)),
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
     );

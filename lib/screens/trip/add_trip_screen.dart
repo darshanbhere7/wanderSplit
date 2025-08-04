@@ -137,170 +137,184 @@ class _AddTripScreenState extends State<AddTripScreen> {
       appBar: AppBar(
         title: const Text('Create New Trip'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Trip Name',
-                prefixIcon: const Icon(Icons.card_travel),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a trip name';
-                }
-                return null;
-              },
-            )
-            .animate()
-            .fadeIn(duration: 500.ms)
-            .slideX(begin: -0.2, end: 0),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: 'Description',
-                prefixIcon: const Icon(Icons.description),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            )
-            .animate()
-            .fadeIn(duration: 500.ms, delay: 200.ms)
-            .slideX(begin: 0.2, end: 0),
-            const SizedBox(height: 24),
-            Text(
-              'Trip Dates',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            )
-            .animate()
-            .fadeIn(duration: 500.ms, delay: 400.ms),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _selectDate(context, true),
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(DateFormat('MMM d, y').format(_startDate)),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.10),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.08),
+              Theme.of(context).colorScheme.background,
+              Colors.white,
+            ],
+          ),
+        ),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Trip Name',
+                  prefixIcon: const Icon(Icons.card_travel),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _selectDate(context, false),
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(DateFormat('MMM d, y').format(_endDate)),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-            .animate()
-            .fadeIn(duration: 500.ms, delay: 600.ms),
-            const SizedBox(height: 24),
-            Text(
-              'Participants',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            )
-            .animate()
-            .fadeIn(duration: 500.ms, delay: 800.ms),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _participantEmailController,
-                    decoration: InputDecoration(
-                      labelText: 'Participant Email',
-                      prefixIcon: const Icon(Icons.email),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _addParticipant,
-                  icon: const Icon(Icons.add),
-                  style: IconButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
-            )
-            .animate()
-            .fadeIn(duration: 500.ms, delay: 1000.ms),
-            const SizedBox(height: 16),
-            ..._participantEmails.map((email) => Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: const CircleAvatar(
-                  child: Icon(Icons.person),
-                ),
-                title: Text(email),
-                trailing: IconButton(
-                  icon: const Icon(Icons.remove_circle_outline),
-                  color: Colors.red,
-                  onPressed: () => _removeParticipant(email),
-                ),
-              ),
-            ).animate()
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a trip name';
+                  }
+                  return null;
+                },
+              )
+              .animate()
               .fadeIn(duration: 500.ms)
-              .slideY(begin: 0.2, end: 0)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _createTrip,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
+              .slideX(begin: -0.2, end: 0),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  prefixIcon: const Icon(Icons.description),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 500.ms, delay: 200.ms)
+              .slideX(begin: 0.2, end: 0),
+              const SizedBox(height: 24),
+              Text(
+                'Trip Dates',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 500.ms, delay: 400.ms),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _selectDate(context, true),
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text(DateFormat('MMM d, y').format(_startDate)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.all(16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _selectDate(context, false),
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text(DateFormat('MMM d, y').format(_endDate)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.all(16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+              .animate()
+              .fadeIn(duration: 500.ms, delay: 600.ms),
+              const SizedBox(height: 24),
+              Text(
+                'Participants',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 500.ms, delay: 800.ms),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _participantEmailController,
+                      decoration: InputDecoration(
+                        labelText: 'Participant Email',
+                        prefixIcon: const Icon(Icons.email),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    onPressed: _addParticipant,
+                    icon: const Icon(Icons.add),
+                    style: IconButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+              .animate()
+              .fadeIn(duration: 500.ms, delay: 1000.ms),
+              const SizedBox(height: 16),
+              ..._participantEmails.map((email) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Create Trip'),
-            )
-            .animate()
-            .fadeIn(duration: 500.ms, delay: 1200.ms)
-            .slideY(begin: 0.2, end: 0),
-          ],
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.person),
+                  ),
+                  title: Text(email),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    color: Colors.red,
+                    onPressed: () => _removeParticipant(email),
+                  ),
+                ),
+              ).animate()
+                .fadeIn(duration: 500.ms)
+                .slideY(begin: 0.2, end: 0)),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _createTrip,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Create Trip'),
+              )
+              .animate()
+              .fadeIn(duration: 500.ms, delay: 1200.ms)
+              .slideY(begin: 0.2, end: 0),
+            ],
+          ),
         ),
       ),
     );

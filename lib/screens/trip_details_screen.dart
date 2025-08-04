@@ -90,11 +90,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.surface,
+              theme.colorScheme.primary.withOpacity(0.10),
+              theme.colorScheme.secondary.withOpacity(0.08),
               theme.colorScheme.background,
+              Colors.white,
             ],
           ),
         ),
@@ -174,7 +176,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
           'Total Expenses',
           _currencyFormat.format(totalExpenses),
           Icons.account_balance_wallet,
-          Colors.blue,
+          Theme.of(context).colorScheme.primary,
         ),
         _buildOverviewCard(
           'Remaining Budget',
@@ -397,10 +399,10 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
 
     return Card(
       elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       shadowColor: Colors.black12,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -675,7 +677,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> with SingleTicker
       case ExpenseCategory.food:
         return Colors.orange;
       case ExpenseCategory.transport:
-        return Colors.blue;
+        return Theme.of(context).colorScheme.primary;
       case ExpenseCategory.accommodation:
         return Colors.purple;
       case ExpenseCategory.activities:
